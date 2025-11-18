@@ -11,7 +11,6 @@ import GenerativeAI from './pages/GenerativeAI'
 import Notebooks from './pages/Notebooks'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import { useAuth } from './hooks/useAuth'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
@@ -58,4 +57,5 @@ function App() {
 }
 
 export default App
+
 
