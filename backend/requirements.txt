@@ -1,0 +1,73 @@
+# FastAPI and server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+pymongo==4.6.0
+alembic==1.12.1
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Data processing
+pandas==2.1.3
+numpy==1.26.2
+scikit-learn==1.3.2
+scipy==1.11.4
+
+# ML/AI libraries
+tensorflow==2.17.0
+torch==2.9.0
+xgboost==2.0.3
+lightgbm==4.1.0
+transformers==4.36.0
+sentence-transformers==2.2.2
+
+# Visualization
+plotly==5.18.0
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# File handling
+openpyxl==3.1.2
+pyarrow==14.0.1
+python-docx==1.1.0
+PyPDF2==3.0.1
+
+# API clients
+openai==1.3.7
+anthropic==0.7.7
+cohere==4.37
+huggingface-hub==0.19.4
+
+# Task queue
+celery==5.3.4
+redis==5.0.1
+
+# Utilities
+python-dotenv==1.0.0
+aiofiles==23.2.1
+httpx==0.25.2
+email-validator
+
+# MLflow for experiment tracking
+mlflow==2.8.1
+
+# Model explainability
+shap==0.44.0
+lime==0.2.0.1
+
+# Jupyter integration
+jupyter-client==8.6.0
+notebook==7.0.6
+
+# Security
+cryptography==41.0.7
+
