@@ -8,7 +8,6 @@ import {
   Sparkles,
   Image,
   BookOpen,
-  LogOut,
 } from 'lucide-react'
 
 const navigation = [
@@ -59,19 +58,12 @@ export default function Layout() {
 
           {/* User section */}
           <div className="p-4 border-t">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900">{user?.username}</p>
-                <p className="text-sm text-gray-500">{user?.email}</p>
+                <p className="font-medium text-gray-900">{user?.username || 'User'}</p>
+                <p className="text-sm text-gray-500">{user?.email || 'user@example.com'}</p>
               </div>
             </div>
-            <button
-              onClick={logout}
-              className="flex items-center space-x-2 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
           </div>
         </div>
       </div>

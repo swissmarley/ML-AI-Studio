@@ -13,7 +13,8 @@ from app.core.config import settings
 from app.models.user import User
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+# Authentication disabled - oauth2_scheme not required but kept for compatibility
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 
 class UserCreate(BaseModel):
@@ -42,25 +43,23 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    """Get current authenticated user"""
-    payload = decode_access_token(token)
-    if payload is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    """Get current authenticated user - Authentication disabled, returns dummy user"""
+    # Authentication disabled - return a dummy user
+    # Try to get or create a default user
+    user = db.query(User).filter(User.username == "user").first()
+    if not user:
+        # Create a dummy user if it doesn't exist
+        user = User(
+            username="user",
+            email="user@example.com",
+            full_name="User",
+            is_active=True,
+            hashed_password=get_password_hash("dummy")
         )
-    
-    user_id = payload.get("sub")
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
+        db.add(user)
+        db.commit()
+        db.refresh(user)
     return user
 
 

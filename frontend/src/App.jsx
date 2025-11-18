@@ -1,6 +1,6 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { AuthProvider, useAuth } from './hooks/useAuth'
+import { AuthProvider } from './hooks/useAuth'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import DataManagement from './pages/DataManagement'
@@ -9,32 +9,11 @@ import Templates from './pages/Templates'
 import AITools from './pages/AITools'
 import GenerativeAI from './pages/GenerativeAI'
 import Notebooks from './pages/Notebooks'
-import Login from './pages/Login'
-import Register from './pages/Register'
-
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
-  
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
-  }
-  
-  return isAuthenticated ? children : <Navigate to="/login" />
-}
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
+      <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="data" element={<DataManagement />} />
         <Route path="models" element={<ModelBuilder />} />

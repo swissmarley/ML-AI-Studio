@@ -1,61 +1,31 @@
-import { useState, useEffect, createContext, useContext } from 'react'
-import api from '../utils/api'
+import { useState, createContext, useContext } from 'react'
 
 const AuthContext = createContext()
 
+// Authentication disabled - app works without login
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loading, setLoading] = useState(true)
+  // Always authenticated with a default user
+  const [user] = useState({
+    id: 1,
+    username: 'user',
+    email: 'user@example.com',
+    full_name: 'User'
+  })
+  const [isAuthenticated] = useState(true)
+  const [loading] = useState(false)
 
-  const fetchUser = async () => {
-    try {
-      const response = await api.get('/auth/me')
-      setUser(response.data)
-      setIsAuthenticated(true)
-    } catch (error) {
-      localStorage.removeItem('token')
-      setIsAuthenticated(false)
-    } finally {
-      setLoading(false)
-    }
+  const login = async () => {
+    // No-op - authentication disabled
+    return { access_token: 'dummy-token' }
   }
 
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      fetchUser()
-    } else {
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const login = async (username, password) => {
-    const formData = new FormData()
-    formData.append('username', username)
-    formData.append('password', password)
-    
-    const response = await api.post('/auth/login', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    
-    localStorage.setItem('token', response.data.access_token)
-    await fetchUser()
-    return response.data
-  }
-
-  const register = async (userData) => {
-    const response = await api.post('/auth/register', userData)
-    return response.data
+  const register = async () => {
+    // No-op - authentication disabled
+    return user
   }
 
   const logout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
-    setIsAuthenticated(false)
+    // No-op - authentication disabled
   }
 
   return (
