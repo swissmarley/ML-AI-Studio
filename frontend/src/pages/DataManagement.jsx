@@ -12,6 +12,12 @@ export default function DataManagement() {
   const { data: datasets, isLoading } = useQuery({
     queryKey: ['datasets'],
     queryFn: () => api.get('/datasets').then((res) => res.data),
+    onError: (error) => {
+      console.error('Error fetching datasets:', error)
+      if (!error.response) {
+        toast.error('Network Error: Unable to connect to the server.')
+      }
+    },
   })
 
   const deleteMutation = useMutation({
@@ -33,7 +39,7 @@ export default function DataManagement() {
       formData.append('file', file)
       formData.append('name', file.name)
 
-      await api.post('/datasets/upload', formData, {
+      const response = await api.post('/datasets/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -42,7 +48,20 @@ export default function DataManagement() {
       queryClient.invalidateQueries(['datasets'])
       toast.success('Dataset uploaded successfully!')
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Upload failed')
+      console.error('Upload error:', error)
+      let errorMessage = 'Upload failed'
+      
+      if (!error.response) {
+        errorMessage = 'Network Error: Unable to connect to the server. Please ensure the backend is running.'
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      toast.error(errorMessage)
     } finally {
       setUploading(false)
     }

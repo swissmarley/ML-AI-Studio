@@ -1,13 +1,37 @@
+import { useState } from 'react'
 import { BookOpen, Plus } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function Notebooks() {
+  const [loading, setLoading] = useState(false)
+
+  const handleNewNotebook = () => {
+    setLoading(true)
+    
+    // Try to open JupyterLab in a new window
+    const jupyterUrl = 'http://localhost:8888'
+    const newWindow = window.open(jupyterUrl, '_blank')
+    
+    if (newWindow) {
+      toast.success('Opening JupyterLab...')
+    } else {
+      toast.error('Please allow popups to open JupyterLab, or click the link below')
+    }
+    
+    setTimeout(() => setLoading(false), 1000)
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Jupyter Notebooks</h1>
-        <button className="btn btn-primary flex items-center space-x-2">
+        <button 
+          onClick={handleNewNotebook}
+          disabled={loading}
+          className="btn btn-primary flex items-center space-x-2"
+        >
           <Plus className="w-5 h-5" />
-          <span>New Notebook</span>
+          <span>{loading ? 'Opening...' : 'New Notebook'}</span>
         </button>
       </div>
 
@@ -26,6 +50,9 @@ export default function Notebooks() {
           >
             <span>Open JupyterLab</span>
           </a>
+          <p className="text-sm text-gray-500 mt-4">
+            Note: Make sure JupyterLab is running on port 8888
+          </p>
         </div>
       </div>
     </div>

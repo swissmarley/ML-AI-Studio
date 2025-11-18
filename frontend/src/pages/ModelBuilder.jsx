@@ -11,6 +11,12 @@ export default function ModelBuilder() {
   const { data: models } = useQuery({
     queryKey: ['models'],
     queryFn: () => api.get('/models').then((res) => res.data),
+    onError: (error) => {
+      console.error('Error fetching models:', error)
+      if (!error.response) {
+        toast.error('Network Error: Unable to connect to the server.')
+      }
+    },
   })
 
   const createMutation = useMutation({
@@ -19,6 +25,18 @@ export default function ModelBuilder() {
       queryClient.invalidateQueries(['models'])
       setShowCreateModal(false)
       toast.success('Model created!')
+    },
+    onError: (error) => {
+      console.error('Error creating model:', error)
+      let errorMessage = 'Failed to create model'
+      
+      if (!error.response) {
+        errorMessage = 'Network Error: Unable to connect to the server.'
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      }
+      
+      toast.error(errorMessage)
     },
   })
 
