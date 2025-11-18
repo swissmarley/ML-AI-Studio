@@ -19,7 +19,7 @@ class Dataset(Base):
     row_count = Column(Integer, nullable=True)
     column_count = Column(Integer, nullable=True)
     schema = Column(JSON, nullable=True)  # Column names, types, etc.
-    metadata = Column(JSON, default=dict)  # Additional metadata
+    extra_metadata = Column(JSON, default=dict)  # Additional metadata (renamed from 'metadata' to avoid SQLAlchemy conflict)
     tags = Column(JSON, default=list)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
