@@ -73,13 +73,15 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         Base.metadata.create_all(bind=engine)
         
         # Check if user already exists
-        if db.query(User).filter(User.email == user_data.email).first():
+        existing_user = db.query(User).filter(User.email == user_data.email).first()
+        if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
         
-        if db.query(User).filter(User.username == user_data.username).first():
+        existing_username = db.query(User).filter(User.username == user_data.username).first()
+        if existing_username:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already taken"
@@ -91,7 +93,8 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
             email=user_data.email,
             username=user_data.username,
             hashed_password=hashed_password,
-            full_name=user_data.full_name
+            full_name=user_data.full_name,
+            is_active=True
         )
         db.add(user)
         db.commit()
@@ -101,7 +104,11 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         print(f"Registration error: {e}")
+        print(f"Traceback: {error_trace}")
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Registration failed: {str(e)}"

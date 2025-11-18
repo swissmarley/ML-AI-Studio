@@ -1,7 +1,8 @@
 """Application configuration"""
 
 from pydantic_settings import BaseSettings
-from typing import List
+from pydantic import field_validator
+from typing import List, Union
 
 
 class Settings(BaseSettings):
@@ -25,11 +26,21 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     
     # CORS
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: Union[str, List[str]] = [
         "http://localhost:3000",
         "http://localhost:3001",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",  # Vite default port
+        "http://127.0.0.1:5173"
     ]
+    
+    @field_validator('CORS_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS origins from string or list"""
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
     
     # File upload
     MAX_UPLOAD_SIZE: int = 100 * 1024 * 1024  # 100MB

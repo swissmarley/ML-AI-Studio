@@ -19,7 +19,21 @@ export default function Login() {
       toast.success('Login successful!')
       navigate('/')
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Login failed')
+      console.error('Login error:', error)
+      let errorMessage = 'Login failed'
+      
+      if (!error.response) {
+        // Network error - backend not reachable
+        errorMessage = 'Network Error: Unable to connect to the server. Please ensure the backend is running.'
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -72,6 +86,11 @@ export default function Login() {
               Register
             </a>
           </p>
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-xs text-blue-800 text-center">
+              <strong>Test Account:</strong> username: <code className="bg-blue-100 px-1 rounded">testuser</code>, password: <code className="bg-blue-100 px-1 rounded">testpass123</code>
+            </p>
+          </div>
         </form>
       </div>
     </div>

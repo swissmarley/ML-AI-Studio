@@ -26,10 +26,19 @@ export default function Register() {
       navigate('/')
     } catch (error) {
       console.error('Registration error:', error)
-      const errorMessage = error.response?.data?.detail || 
-                          error.response?.data?.message || 
-                          error.message || 
-                          'Registration failed'
+      let errorMessage = 'Registration failed'
+      
+      if (!error.response) {
+        // Network error - backend not reachable
+        errorMessage = 'Network Error: Unable to connect to the server. Please ensure the backend is running.'
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
       toast.error(errorMessage)
     } finally {
       setLoading(false)

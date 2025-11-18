@@ -26,11 +26,38 @@ def get_db():
 
 
 async def init_db():
-    """Initialize database tables"""
+    """Initialize database tables and create default test account"""
     try:
         from app.models import user, project, dataset, model  # noqa
         Base.metadata.create_all(bind=engine)
         print("Database tables created successfully")
+        
+        # Create default test account if it doesn't exist
+        db = SessionLocal()
+        try:
+            from app.models.user import User
+            from app.core.security import get_password_hash
+            
+            default_user = db.query(User).filter(User.username == "testuser").first()
+            if not default_user:
+                default_user = User(
+                    email="test@example.com",
+                    username="testuser",
+                    hashed_password=get_password_hash("testpass123"),
+                    full_name="Test User",
+                    is_active=True,
+                    is_superuser=False
+                )
+                db.add(default_user)
+                db.commit()
+                print("Default test account created: username='testuser', password='testpass123'")
+            else:
+                print("Default test account already exists")
+        except Exception as e:
+            print(f"Error creating default test account: {e}")
+            db.rollback()
+        finally:
+            db.close()
     except Exception as e:
         print(f"Error initializing database: {e}")
         # Don't raise - allow app to start even if DB init fails
