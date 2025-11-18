@@ -25,7 +25,12 @@ export default function Register() {
       await login(formData.username, formData.password)
       navigate('/')
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed')
+      console.error('Registration error:', error)
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Registration failed'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
