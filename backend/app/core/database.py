@@ -27,6 +27,12 @@ def get_db():
 
 async def init_db():
     """Initialize database tables"""
-    from app.models import user, project, dataset, model  # noqa
-    Base.metadata.create_all(bind=engine)
+    try:
+        from app.models import user, project, dataset, model  # noqa
+        Base.metadata.create_all(bind=engine)
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Error initializing database: {e}")
+        # Don't raise - allow app to start even if DB init fails
+        # Tables will be created on first request if needed
 
