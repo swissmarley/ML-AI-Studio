@@ -57,9 +57,21 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
+    from app.core.database import engine
+    from sqlalchemy import text
+    
+    db_status = "unknown"
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
     return JSONResponse({
-        "status": "healthy",
-        "service": "ml-ai-studio-backend"
+        "status": "healthy" if db_status == "connected" else "degraded",
+        "service": "ml-ai-studio-backend",
+        "database": db_status
     })
 
 
