@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 from datetime import timedelta
 
 from app.core.database import get_db
@@ -20,7 +21,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     username: str
     password: str
-    full_name: str = None
+    full_name: Optional[str] = None
 
 
 class UserResponse(BaseModel):
@@ -66,32 +67,45 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """Register a new user"""
-    # Check if user already exists
-    if db.query(User).filter(User.email == user_data.email).first():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+    try:
+        # Ensure tables exist
+        from app.core.database import Base, engine
+        Base.metadata.create_all(bind=engine)
+        
+        # Check if user already exists
+        if db.query(User).filter(User.email == user_data.email).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        
+        if db.query(User).filter(User.username == user_data.username).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
+        
+        # Create new user
+        hashed_password = get_password_hash(user_data.password)
+        user = User(
+            email=user_data.email,
+            username=user_data.username,
+            hashed_password=hashed_password,
+            full_name=user_data.full_name
         )
-    
-    if db.query(User).filter(User.username == user_data.username).first():
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Registration error: {e}")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already taken"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {str(e)}"
         )
-    
-    # Create new user
-    hashed_password = get_password_hash(user_data.password)
-    user = User(
-        email=user_data.email,
-        username=user_data.username,
-        hashed_password=hashed_password,
-        full_name=user_data.full_name
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    
-    return user
 
 
 @router.post("/login", response_model=Token)
