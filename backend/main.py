@@ -18,7 +18,14 @@ from app.api.v1 import api_router
 async def lifespan(app: FastAPI):
     """Lifespan events for startup and shutdown"""
     # Startup
+    print("=" * 50)
+    print("ML-AI Studio Backend Starting...")
+    print(f"Debug Mode: {settings.DEBUG}")
+    print(f"CORS Origins: {settings.CORS_ORIGINS}")
+    print("=" * 50)
     await init_db()
+    print("Backend ready! API available at http://0.0.0.0:8000")
+    print("API docs available at http://0.0.0.0:8000/docs")
     yield
     # Shutdown
     pass
@@ -32,10 +39,20 @@ app = FastAPI(
 )
 
 # CORS middleware
+# In development, allow all origins; in production, use configured origins
+cors_origins = settings.CORS_ORIGINS
+allow_creds = True
+if settings.DEBUG:
+    cors_origins = ["*"]  # Allow all origins in debug mode
+    allow_creds = False  # Can't use credentials with wildcard origins
+    print("⚠️  DEBUG MODE: CORS allows all origins")
+else:
+    print(f"CORS Origins: {cors_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=allow_creds,
     allow_methods=["*"],
     allow_headers=["*"],
 )

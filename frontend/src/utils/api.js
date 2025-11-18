@@ -1,16 +1,20 @@
 import axios from 'axios'
 
-// Get API URL from environment variable or use default
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// Get API URL from environment variable
+// In development with Vite proxy, we can use relative URLs
+// In production or when VITE_API_URL is set, use that
+const API_URL = import.meta.env.VITE_API_URL || ''
+const BASE_URL = API_URL ? `${API_URL}/api/v1` : '/api/v1'
 
-console.log('API URL configured:', API_URL)
+console.log('API URL configured:', API_URL || 'Using relative URL (Vite proxy)')
+console.log('Base URL:', BASE_URL)
 
 const api = axios.create({
-  baseURL: `${API_URL}/api/v1`,
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 30000, // 30 second timeout (increased for debugging)
 })
 
 // Add token to requests
