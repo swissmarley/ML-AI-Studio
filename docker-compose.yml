@@ -85,7 +85,7 @@ services:
       dockerfile: Dockerfile
     container_name: mlai-frontend
     environment:
-      REACT_APP_API_URL: http://localhost:8000
+      VITE_API_URL: http://localhost:8000
     ports:
       - "3000:3000"
     volumes:
@@ -102,7 +102,7 @@ services:
       dockerfile: Dockerfile
     container_name: mlai-jupyter
     environment:
-      JUPYTER_ENABLE_LAB: yes
+      JUPYTER_ENABLE_LAB: 
       JUPYTER_TOKEN: ${JUPYTER_TOKEN:-mlai-token-change-in-production}
     ports:
       - "8888:8888"
@@ -119,4 +119,5 @@ volumes:
   backend_data:
   model_cache:
   jupyter_data:
+
 
