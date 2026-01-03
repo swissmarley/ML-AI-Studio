@@ -19,7 +19,9 @@ class Settings(BaseSettings):
     JWT_EXPIRATION_HOURS: int = 24
     
     # Database
-    DATABASE_URL: str = "postgresql://mlai_user:mlai_password@localhost:5432/mlai_studio"
+    # Default to a local SQLite database for easy local development.
+    # Docker-compose overrides this to Postgres in production-like setups.
+    DATABASE_URL: str = "sqlite:///./data/mlai_studio.db"
     MONGODB_URL: str = "mongodb://mlai_user:mlai_password@localhost:27017/mlai_studio?authSource=admin"
     
     # Redis
