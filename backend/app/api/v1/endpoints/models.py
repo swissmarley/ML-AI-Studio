@@ -6,6 +6,8 @@ from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 from datetime import datetime
 import json
+from uuid import uuid4
+from pathlib import Path
 
 from app.core.database import get_db
 from app.api.v1.endpoints.auth import get_current_user
@@ -13,8 +15,10 @@ from app.models.user import User
 from app.models.model import MLModel, ModelVersion, ModelExperiment
 from app.models.project import Project
 from app.models.dataset import Dataset
+from app.services.ml_service import MLService
 
 router = APIRouter()
+ml_service = MLService(model_storage_path=Path("data") / "models")
 
 
 class ModelCreate(BaseModel):
@@ -174,26 +178,78 @@ async def train_model(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Dataset not found"
         )
-    
-    # Create experiment
+
     experiment = ModelExperiment(
         name=f"Training {model.name}",
         model_id=model_id,
-        hyperparameters=config.hyperparameters,
+        hyperparameters=config.hyperparameters or {},
         status="running"
     )
     db.add(experiment)
     model.status = "training"
     db.commit()
-    
-    # TODO: Implement actual training logic in background task
-    # background_tasks.add_task(train_model_task, model_id, config, experiment.id)
-    
-    return {
-        "message": "Training started",
-        "experiment_id": experiment.id,
-        "model_id": model_id
-    }
+    db.refresh(experiment)
+
+    try:
+        if model.model_type == "regression":
+            trained_model, metrics = ml_service.train_regression_model(
+                dataset_path=dataset.file_path,
+                target_column=config.target_column,
+                algorithm=model.algorithm,
+                test_size=config.test_size,
+                random_state=config.random_state,
+                hyperparameters=config.hyperparameters or {}
+            )
+        else:
+            trained_model, metrics = ml_service.train_classification_model(
+                dataset_path=dataset.file_path,
+                target_column=config.target_column,
+                algorithm=model.algorithm,
+                test_size=config.test_size,
+                random_state=config.random_state,
+                hyperparameters=config.hyperparameters or {}
+            )
+
+        # Save trained model artifact
+        version_tag = f"{len(model.versions) + 1}.0.0"
+        model_path = ml_service.save_model(
+            trained_model,
+            model_id=model.id,
+            version=version_tag
+        )
+
+        version = ModelVersion(
+            version=version_tag,
+            model_path=model_path,
+            metrics=metrics,
+            hyperparameters=config.hyperparameters or {},
+            training_config=config.model_dump(),
+            model_id=model.id
+        )
+        experiment.metrics = metrics
+        experiment.status = "completed"
+        db.add(version)
+        model.status = "trained"
+        db.commit()
+        db.refresh(version)
+
+        return {
+            "message": "Training completed",
+            "experiment_id": experiment.id,
+            "model_id": model.id,
+            "version": version.version,
+            "metrics": metrics
+        }
+    except Exception as exc:
+        db.rollback()
+        experiment.status = "failed"
+        db.add(experiment)
+        model.status = "draft"
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Training failed: {exc}"
+        )
 
 
 @router.get("/{model_id}/versions", response_model=List[ModelVersionResponse])

@@ -28,6 +28,7 @@ class MLService:
         hyperparameters: dict = None
     ):
         """Train a classification model"""
+        hyperparameters = hyperparameters or {}
         # Load data
         df = pd.read_csv(dataset_path)
         
@@ -76,6 +77,7 @@ class MLService:
         hyperparameters: dict = None
     ):
         """Train a regression model"""
+        hyperparameters = hyperparameters or {}
         # Load data
         df = pd.read_csv(dataset_path)
         
